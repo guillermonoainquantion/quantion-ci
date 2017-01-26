@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.7">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty/>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.22.3">
+      <projectUrl>https://github.com/gnoain/cities/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.19">
+    <script>node {
+    def nodeHome = tool name: &apos;node-5.12.0&apos;, type: &apos;jenkins.plugins.nodejs.tools.NodeJSInstallation&apos;
+    env.PATH = &quot;${nodeHome}/bin:${env.PATH}&quot;
+    
+    stage &apos;Check Environment&apos;
+        sh &quot;docker ps -a&quot;
+        sh &quot;node -v&quot;
+        sh &quot;npm -v&quot;
+        sh &quot;bower -v&quot;
+        sh &quot;karma --version&quot;
+        
+    stage &apos;Checkout&apos;
+        git([url: &apos;https://github.com/gnoain/cities.git&apos;, branch: &apos;master&apos;])
+        
+    stage &apos;Install Dependencies&apos;
+        sh &apos;npm install&apos;
+        sh &apos;bower install&apos;
+    
+    stage &apos;Backend Tests&apos;
+        sh &apos;npm test&apos;
+    
+    stage &apos;Frontend Tests&apos;
+        sh &apos;karma start&apos;
+    
+    docker.withRegistry(&apos;https://registry.quantion.com&apos;) {
+        stage &apos;Build Docker Image&apos;
+            def cities = docker.build &quot;gnoain/cities:${env.BUILD_TAG}&quot;
+        
+        cities.inside {
+            stage &apos;Run Back End Test In Container&apos;
+                sh &apos;npm test&apos;
+            stage &apos;Run Front End Test In Container&apos;
+                sh &apos;karma start&apos; 
+        } 
+    
+        stage &apos;Push to registry.quantion.com&apos;
+            cities.push()
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

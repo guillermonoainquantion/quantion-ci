@@ -1,0 +1,63 @@
+version: '2'
+services:
+  nginx:
+    image: "nginx:latest"
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      cinet:
+        ipv4_address: 10.10.1.2
+    links:
+      - registry:registry
+      - jenkins:jenkins
+    volumes:
+      - ./data_nginx:/etc/nginx/conf.d:ro
+
+  registry:
+    image: registry:2
+    ports:
+      - 5000:5000
+    # links:
+    #   - redis
+    # depends_on:
+    #   - redis
+    networks:
+      cinet:
+        ipv4_address: 10.10.1.4
+    environment:
+      REGISTRY_HTTP_SECRET: hastaelfinalvamosereal
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry_data
+      # REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: redis
+      # REGISTRY_REDIS_ADDR: redis:6379
+    volumes:
+      - ./data_registry:/registry_data
+
+  jenkins:
+    image: "jenkins:latest"
+    ports:
+      - 50000:50000
+    networks:
+      cinet:
+        ipv4_address: 10.10.1.3
+    privileged: true
+    volumes:
+      - ./data_jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/local/bin/docker
+
+  # redis:
+  #   image: redis:latest
+  #   ports:
+  #     - 6379:6379
+  #   networks:
+  #     cinet:
+  #       ipv4_address: 10.10.1.5
+
+networks:
+  cinet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.1.0/25
+          gateway: 10.10.1.1
