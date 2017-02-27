@@ -3,11 +3,8 @@
   <fullName>Guillermo</fullName>
   <properties>
     <jenkins.security.ApiTokenProperty>
-      <apiToken>p9gg3kdL6KRArk0vXn5d5pSyv8o7oUhqnWgAQWctrGvfcsC2CnPrFUJ8RBsgL/oM</apiToken>
+      <apiToken>4Im16u/xGy79rxTkDH3xnHcjRHLIAhFih0UwJtxXlBPx5pB++TbXtWRCHfkG6RxM14JNEHoQhXRZA8rWME3D6CXBEy4kp2rLW/SxkkTn7R4=</apiToken>
     </jenkins.security.ApiTokenProperty>
-    <com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty plugin="credentials@2.1.7">
-      <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash"/>
-    </com.cloudbees.plugins.credentials.UserCredentialsProvider_-UserCredentialsProperty>
     <hudson.model.MyViewsProperty>
       <views>
         <hudson.model.AllView>
@@ -28,12 +25,6 @@
     <hudson.security.HudsonPrivateSecurityRealm_-Details>
       <passwordHash>#jbcrypt:$2a$10$YbT/9rhWwrgQd6gdEBqqGOzGO9rJi.tHGt9t1IZ6ureDtM0J.HkgW</passwordHash>
     </hudson.security.HudsonPrivateSecurityRealm_-Details>
-    <hudson.tasks.Mailer_-UserProperty plugin="mailer@1.18">
-      <emailAddress>guillermo.noain@quantion.com</emailAddress>
-    </hudson.tasks.Mailer_-UserProperty>
-    <hudson.plugins.emailext.watching.EmailExtWatchAction_-UserProperty plugin="email-ext@2.51">
-      <triggers/>
-    </hudson.plugins.emailext.watching.EmailExtWatchAction_-UserProperty>
     <jenkins.security.LastGrantedAuthoritiesProperty>
       <roles>
         <string>authenticated</string>
