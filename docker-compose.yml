@@ -48,7 +48,8 @@ services:
 #      - /usr/bin/docker:/usr/bin/docker
 #    extra_hosts:
 #      - "mongo.development:10.0.16.137"
-#    environment:
+    environment:
+      - JENKINS_OPTS="--prefix=/jenkins"
 #      DOCKER_SOCKET: /var/run/docker.sock
 #      DOCKER_GROUP: dockerhost
 #      JENKINS_USER: jenkins
