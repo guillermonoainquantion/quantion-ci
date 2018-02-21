@@ -1,192 +1,155 @@
-version: '2'
+version: '3'
 services:
   nginx:
-    image: "nginx:latest"
+    image: nginx:latest
     container_name: nginx
     ports:
       - 80:80
-      - 443:443
-    networks:
-      cinet:
-        ipv4_address: 10.10.1.20
     depends_on:
       - jenkins
-      - hygieia-ui
-      - sonarqube
-    # links:
-    #   - registry:registry
-    #   - jenkins:jenkins
+      # - hygieia-ui
+      # - sonarqube
     volumes:
       - ./data_nginx:/etc/nginx/conf.d:ro
-  # registry:
-  #   image: registry:2
-  #   container_name: docker_registry
-  #   ports:
-  #     - 5000:5000
-  #   # links:
-  #   #   - redis
-  #   # depends_on:
-  #   #   - redis
-  #   networks:
-  #     - cinet
-  #   environment:
-  #     REGISTRY_HTTP_SECRET: hastaelfinalvamosereal
-  #     REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry_data
-  #     # REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: redis
-  #     # REGISTRY_REDIS_ADDR: redis:6379
-  #   volumes:
-  #     - ./data_registry:/registry_data
-  sonarqube:
-    image: sonarqube:6.2
-    container_name: sonarqube
-    restart: always
-    networks:
-      - cinet
-    depends_on:
-      - sonar-plugins
-    volumes_from:
-      - sonar-plugins
-  sonar-plugins:
-    build:
-      context: ./data_sonar/plugins
-    container_name: sonar_plugins
-      # args:
-      #   - http_proxy
-      #   - https_proxy
-      #   - no_proxy
+#  sonarqube:
+#    image: sonarqube:6.2
+#    container_name: sonarqube
+#    restart: always
+#    networks:
+#      - cinet
+#    depends_on:
+#      - sonar-plugins
+#    volumes_from:
+#      - sonar-plugins
+#  sonar-plugins:
+#    build:
+#      context: ./data_sonar/plugins
+#    container_name: sonar_plugins
+#      # args:
+#      #   - http_proxy
+#      #   - https_proxy
+#      #   - no_proxy
   jenkins:
+    # image: jenkins:latest
     build:
-      context: ./dockerfiles/jenkins
+      context: .
+      dockerfile: ./dockerfiles/jenkins/Jenkins.Dockerfile
       # args:
-      #   - http_proxy
-      #   - https_proxy
-      #   - no_proxy
-    container_name: jenkins
-    # ports:
-    #   - 50000:50000
-    networks:
-      - cinet
+      #   http_proxy: http://t0000104:12345678@192.168.50.140:8080
+      #   https_proxy: http://t0000104:12345678@192.168.50.140:8080
     privileged: true
+    container_name: jenkins
+    ports:
+      - 8090:8080
+      - 50000:50000
     volumes:
       - ./data_jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
-    extra_hosts:
-      - "mongo.development:10.0.16.137"
-    environment:
-      DOCKER_SOCKET: /var/run/docker.sock
-      DOCKER_GROUP: dockerhost
-      JENKINS_USER: jenkins
-      DOCKER_HOST: unix:///var/run/docker.sock
-      # http_proxy: http://t0000104:12345678@192.168.50.140:8080
-      # https_proxy: http://t0000104:12345678@192.168.50.140:8080
-      # no_proxy: localhost,127.0.0.0/8,::1,www.ave.elcorteingles.es,mongo.development,oidc.ave.elcorteingles.es,moonshine2.dev,10.10.1.0/25,*.quantion.com,*.local,169.254/16,www.ave.elcorteingles.es,www.nftmant.elcorteingles.es,www.ave.elcorteingles.pt,www.beta.elcorteingles.pt,*.uat.elcorteingles.es,*.sgfm.elcorteingles.pre,supermercado.ave.elcorteingles.es,hipercor.ave.elcorteingles.es,promise-food.ave.eci.geci,192.168.61.102:9000,10.0.20.203,supermercado.ave.elcorteingles.pt
-      # JAVA_OPTS: -Djavax.net.debug=all -Dhttp.proxyHost=192.168.50.140 -Dhttp.proxyPort=8080 -Dhttps.proxyHost=192.168.50.140 -Dhttps.proxyPort=8080 -Dhttp.proxyUser=t0000104 -Dhttp.proxyPassword=12345678 -Dhttps.proxyUser=t0000104 -Dhttps.proxyPassword=12345678, -Dhttp.nonProxyHosts=localhost|127.0.0.0/8|::1|www.ave.elcorteingles.es|mongo.development|oidc.ave.elcorteingles.es|moonshine2.dev|10.10.1.0/25|*.quantion.com|*.local|169.254/16|www.ave.elcorteingles.es|www.nftmant.elcorteingles.es|www.ave.elcorteingles.pt|www.beta.elcorteingles.pt|*.uat.elcorteingles.es|*.sgfm.elcorteingles.pre|supermercado.ave.elcorteingles.es|hipercor.ave.elcorteingles.es|promise-food.ave.eci.geci|192.168.61.102:9000|10.0.20.203|supermercado.ave.elcorteingles.pt
-      # # JAVA_OPTS: -Djavax.net.debug=all
-  mongodb:
-    image: mongo:latest
-    container_name: hygieia-db
-    command: mongod --smallfiles
-    networks:
-      - cinet
-    # ports:
-    #   - "27017:27017"
-    volumes:
-      - ./data_hygieia/mongo:/data/db:rw
-  hygieia-api:
-    image: capitaloneio/hygieia-api:latest
-    container_name: hygieia-api
-    # ports:
-    #   - "8080:8080"
-    networks:
-      - cinet
-    volumes:
-      - ./data_hygieia/logs:/hygieia/logs
-    depends_on:
-      - mongodb
-    links:
-      - mongodb:mongo
-    environment:
-      SPRING_DATA_MONGODB_HOST: mongo
-      SPRING_DATA_MONGODB_PORT: 27017
-      SPRING_DATA_MONGODB_DATABASE: dashboard
-      SPRING_DATA_MONGODB_USERNAME: mongo
-      SPRING_DATA_MONGODB_PASSWORD: mongo
-  hygieia-ui:
-    image: capitaloneio/hygieia-ui:latest
-    container_name: hygieia-ui
-    networks:
-      - cinet
-    depends_on:
-      - hygieia-api
-    environment:
-      HYGIEIA_API_PORT: http://hygieia-api:8080
-  hygieia-github-scm-collector:
-    image: capitalone/hygieia-github-scm-collector:latest
-    container_name: hygieia-github
-    volumes:
-      - ./data_hygieia/github/logs:/hygieia/logs
-    links:
-      - mongodb:mongo
-    networks:
-      - cinet
-    depends_on:
-      - mongodb
-    environment:
-      GITHUB_HOST: github.com
-      GITHUB_CRON: 0 0/5 * * * *
-      GITHUB_COMMIT_THRESHOLD_DAYS: 30
-      MONGO_PORT: http://mongo:27017
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
-  hygieia-jenkins-build-collector:
-    image: capitalone/hygieia-jenkins-build-collector:latest
-    container_name: hygieia-jenkins
-    volumes:
-      - ./data_hygieia/jenkins/logs:/hygieia/logs
-    links:
-      - mongodb:mongo
-    networks:
-      - cinet
-    depends_on:
-      - mongodb
-      - jenkins
-      - nginx
-    extra_hosts:
-      - "jenkins.quantion.com:10.10.1.20"
-    environment:
-      JENKINS_MASTER: http://jenkins.quantion.com
-      #JENKINS_OP_CENTER: http://admin:81cd95a5e3b475530f4f1e369770cbd3@jenkins:8080
-      JENKINS_USERNAME: admin
-      JENKINS_API_KEY: 81cd95a5e3b475530f4f1e369770cbd3
-      JENKINS_CRON: 0 1/6 * * * *
-      JENKINS_SAVELOG: "false"
-      MONGO_PORT: http://mongo:27017
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
-  hygieia-sonar-codequality-collector:
-    image: capitalone/hygieia-sonar-codequality-collector:latest
-    container_name: hygieia-sonar-codequality
-    networks:
-      - cinet
-    depends_on:
-      - mongodb
-      - sonarqube
-    volumes:
-      - ./logs:/hygieia/logs
-    links:
-      - mongodb:mongo
-      - hygieia-api
-    environment:
-      SONAR_CRON: 0 2/7 * * * *
-      SONAR_URL: http://sonarqube:9000
-      MONGO_PORT: http://mongo:27017
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
-      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
-networks:
-  cinet:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.10.1.0/25
-          gateway: 10.10.1.1
+#      - /usr/bin/docker:/usr/bin/docker
+#    extra_hosts:
+#      - "mongo.development:10.0.16.137"
+#    environment:
+#      DOCKER_SOCKET: /var/run/docker.sock
+#      DOCKER_GROUP: dockerhost
+#      JENKINS_USER: jenkins
+#      DOCKER_HOST: unix:///var/run/docker.sock
+#  mongodb:
+#    image: mongo:latest
+#    container_name: hygieia-db
+#    command: mongod --smallfiles
+#    networks:
+#      - cinet
+#    # ports:
+#    #   - "27017:27017"
+#    volumes:
+#      - ./data_hygieia/mongo:/data/db:rw
+#  hygieia-api:
+#    image: capitaloneio/hygieia-api:latest
+#    container_name: hygieia-api
+#    # ports:
+#    #   - "8080:8080"
+#    networks:
+#      - cinet
+#    volumes:
+#      - ./data_hygieia/logs:/hygieia/logs
+#    depends_on:
+#      - mongodb
+#    links:
+#      - mongodb:mongo
+#    environment:
+#      SPRING_DATA_MONGODB_HOST: mongo
+#      SPRING_DATA_MONGODB_PORT: 27017
+#      SPRING_DATA_MONGODB_DATABASE: dashboard
+#      SPRING_DATA_MONGODB_USERNAME: mongo
+#      SPRING_DATA_MONGODB_PASSWORD: mongo
+#  hygieia-ui:
+#    image: capitaloneio/hygieia-ui:latest
+#    container_name: hygieia-ui
+#    networks:
+#      - cinet
+#    depends_on:
+#      - hygieia-api
+#    environment:
+#      HYGIEIA_API_PORT: http://hygieia-api:8080
+#  hygieia-github-scm-collector:
+#    image: capitalone/hygieia-github-scm-collector:latest
+#    container_name: hygieia-github
+#    volumes:
+#      - ./data_hygieia/github/logs:/hygieia/logs
+#    links:
+#      - mongodb:mongo
+#    networks:
+#      - cinet
+#    depends_on:
+#      - mongodb
+#    environment:
+#      GITHUB_HOST: github.com
+#      GITHUB_CRON: 0 0/5 * * * *
+#      GITHUB_COMMIT_THRESHOLD_DAYS: 30
+#      MONGO_PORT: http://mongo:27017
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
+#  hygieia-jenkins-build-collector:
+#    image: capitalone/hygieia-jenkins-build-collector:latest
+#    container_name: hygieia-jenkins
+#    volumes:
+#      - ./data_hygieia/jenkins/logs:/hygieia/logs
+#    links:
+#      - mongodb:mongo
+#    networks:
+#      - cinet
+#    depends_on:
+#      - mongodb
+#      - jenkins
+#      - nginx
+#    extra_hosts:
+#      - "jenkins.quantion.com:10.10.1.20"
+#    environment:
+#      JENKINS_MASTER: http://jenkins.quantion.com
+#      #JENKINS_OP_CENTER: http://admin:81cd95a5e3b475530f4f1e369770cbd3@jenkins:8080
+#      JENKINS_USERNAME: admin
+#      JENKINS_API_KEY: 81cd95a5e3b475530f4f1e369770cbd3
+#      JENKINS_CRON: 0 1/6 * * * *
+#      JENKINS_SAVELOG: "false"
+#      MONGO_PORT: http://mongo:27017
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
+#  hygieia-sonar-codequality-collector:
+#    image: capitalone/hygieia-sonar-codequality-collector:latest
+#    container_name: hygieia-sonar-codequality
+#    networks:
+#      - cinet
+#    depends_on:
+#      - mongodb
+#      - sonarqube
+#    volumes:
+#      - ./logs:/hygieia/logs
+#    links:
+#      - mongodb:mongo
+#      - hygieia-api
+#    environment:
+#      SONAR_CRON: 0 2/7 * * * *
+#      SONAR_URL: http://sonarqube:9000
+#      MONGO_PORT: http://mongo:27017
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_USERNAME: mongo
+#      HYGIEIA_API_ENV_SPRING_DATA_MONGODB_PASSWORD: mongo
