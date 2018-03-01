@@ -1,4 +1,7 @@
 version: '3'
+volumes:
+  data-jenkins:
+    driver: "local"
 services:
   # nginx:
   #   image: nginx:latest
@@ -44,7 +47,7 @@ services:
       - 8081:8081
       - 50000:50000
     volumes:
-      - ./data_jenkins:/var/jenkins_home
+      - data-jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
 #      - /usr/bin/docker:/usr/bin/docker
 #    extra_hosts:
@@ -54,7 +57,7 @@ services:
       - http_proxy="http://t0000104:12345678@192.168.50.140:8080"
       - https_proxy="http://t0000104:12345678@192.168.50.140:8080"
       - JAVA_OPTS="-Dhttp.proxyHost=t0000104:12345678@192.168.50.140 -Dhttp.proxyPort=8080 -Dhttps.proxyHost=t0000104:12345678@192.168.50.140 -Dhttps.proxyPort=8080"
-      - DOCKER_SOCKET="/var/run/docker.sock"
+      - DOCKER_SOCKET=/var/run/docker.sock
 #      DOCKER_HOST: unix:///var/run/docker.sock
 #  mongodb:
 #    image: mongo:latest
