@@ -1,16 +1,16 @@
 version: '3'
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - 80:80
-    depends_on:
-      - jenkins
-      # - hygieia-ui
-      # - sonarqube
-    volumes:
-      - ./data_nginx:/etc/nginx/conf.d:ro
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - jenkins
+  #     # - hygieia-ui
+  #     # - sonarqube
+  #   volumes:
+  #     - ./data_nginx:/etc/nginx/conf.d:ro
 #  sonarqube:
 #    image: sonarqube:6.2
 #    container_name: sonarqube
@@ -37,10 +37,11 @@ services:
       # args:
       #   http_proxy: http://t0000104:12345678@192.168.50.140:8080
       #   https_proxy: http://t0000104:12345678@192.168.50.140:8080
-    privileged: true
+    # privileged: true
     container_name: jenkins
+    network_mode: host
     ports:
-      - 8090:8080
+      - 8081:8081
       - 50000:50000
     volumes:
       - ./data_jenkins:/var/jenkins_home
@@ -49,10 +50,11 @@ services:
 #    extra_hosts:
 #      - "mongo.development:10.0.16.137"
     environment:
-      - JENKINS_OPTS="--prefix=/jenkins"
-#      DOCKER_SOCKET: /var/run/docker.sock
-#      DOCKER_GROUP: dockerhost
-#      JENKINS_USER: jenkins
+      # - JENKINS_OPTS="--httpPort=8081 --prefix=/jenkins"
+      - http_proxy="http://t0000104:12345678@192.168.50.140:8080"
+      - https_proxy="http://t0000104:12345678@192.168.50.140:8080"
+      - JAVA_OPTS="-Dhttp.proxyHost=t0000104:12345678@192.168.50.140 -Dhttp.proxyPort=8080 -Dhttps.proxyHost=t0000104:12345678@192.168.50.140 -Dhttps.proxyPort=8080"
+      - DOCKER_SOCKET="/var/run/docker.sock"
 #      DOCKER_HOST: unix:///var/run/docker.sock
 #  mongodb:
 #    image: mongo:latest
