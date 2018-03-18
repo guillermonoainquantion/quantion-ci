@@ -16,10 +16,9 @@ RUN apt-get update && \
     apt-get update && \
     apt-get -y install docker-ce
 
-ENV JENKINS_OPTS --httpPort=8081 --prefix=/jenkins
+ENV JENKINS_OPTS --prefix=/jenkins
 
 COPY ./dockerfiles/jenkins/entrypoint.sh .
 RUN chmod +x entrypoint.sh
-RUN ls -al
 
 ENTRYPOINT ["/bin/bash","-c","./entrypoint.sh"]

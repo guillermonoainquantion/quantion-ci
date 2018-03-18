@@ -1,64 +1,62 @@
 version: '3'
 volumes:
   data-jenkins:
-    driver: "local"
+  sonar_plugins:
+  sonar_data:
+  sonar_conf:
+  postgresql:
+  postgresql_data:
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   container_name: nginx
-  #   ports:
-  #     - 80:80
-  #   depends_on:
-  #     - jenkins
-  #     # - hygieia-ui
-  #     # - sonarqube
-  #   volumes:
-  #     - ./data_nginx:/etc/nginx/conf.d:ro
-#  sonarqube:
-#    image: sonarqube:6.2
-#    container_name: sonarqube
-#    restart: always
-#    networks:
-#      - cinet
-#    depends_on:
-#      - sonar-plugins
-#    volumes_from:
-#      - sonar-plugins
-#  sonar-plugins:
-#    build:
-#      context: ./data_sonar/plugins
-#    container_name: sonar_plugins
-#      # args:
-#      #   - http_proxy
-#      #   - https_proxy
-#      #   - no_proxy
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 80:80
+    depends_on:
+     - jenkins
+      # - hygieia-ui
+     - sonarqube
+    volumes:
+      - ./data_nginx:/etc/nginx/conf.d:ro
+  sonarqube:
+    image: sonarqube:6.2
+    container_name: sonarqube
+    command: -Dsonar.web.context=/sonarqube
+    depends_on:
+      - sonar-plugins
+      - sonar-db
+    environment:
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonar-db:5432/sonar
+    volumes:
+      - sonar_plugins:/opt/sonarqube/extensions/plugins
+      - sonar_conf:/opt/sonarqube/conf
+      - sonar_data:/opt/sonarqube/data
+  sonar-plugins:
+    build:
+      context: ./data_sonar/plugins
+    container_name: sonar_plugins
+    volumes:
+      - sonar_plugins:/opt/sonarqube/extensions/plugins
+  sonar-db:
+    image: postgres
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
   jenkins:
-    # image: jenkins:latest
     build:
       context: .
       dockerfile: ./dockerfiles/jenkins/Jenkins.Dockerfile
-      # args:
-      #   http_proxy: http://t0000104:12345678@192.168.50.140:8080
-      #   https_proxy: http://t0000104:12345678@192.168.50.140:8080
-    # privileged: true
     container_name: jenkins
-    network_mode: host
-    ports:
-      - 8081:8081
-      - 50000:50000
     volumes:
       - data-jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-#      - /usr/bin/docker:/usr/bin/docker
-#    extra_hosts:
-#      - "mongo.development:10.0.16.137"
     environment:
-      # - JENKINS_OPTS="--httpPort=8081 --prefix=/jenkins"
-      - http_proxy="http://t0000104:12345678@192.168.50.140:8080"
-      - https_proxy="http://t0000104:12345678@192.168.50.140:8080"
-      - JAVA_OPTS="-Dhttp.proxyHost=t0000104:12345678@192.168.50.140 -Dhttp.proxyPort=8080 -Dhttps.proxyHost=t0000104:12345678@192.168.50.140 -Dhttps.proxyPort=8080"
+      - JENKINS_OPTS="--prefix=/jenkins"
       - DOCKER_SOCKET=/var/run/docker.sock
-#      DOCKER_HOST: unix:///var/run/docker.sock
+
 #  mongodb:
 #    image: mongo:latest
 #    container_name: hygieia-db

@@ -16,8 +16,7 @@ WORKDIR $PLUGINS_DIR
 
 ENV JAVASCRIPT_VERSION 2.20.0.4207
 RUN wget https://sonarsource.bintray.com/Distribution/sonar-javascript-plugin/sonar-javascript-plugin-$JAVASCRIPT_VERSION.jar && \
-    wget https://sonarsource.bintray.com/Distribution/sonar-github-plugin/sonar-github-plugin-1.4.0.699.jar
-
-VOLUME $PLUGINS_DIR
+    wget https://sonarsource.bintray.com/Distribution/sonar-github-plugin/sonar-github-plugin-1.4.2.1027.jar && \
+    wget https://sonarsource.bintray.com/Distribution/sonar-typescript-plugin/sonar-typescript-plugin-1.6.0.2388.jar
 
 CMD ls -asl $PLUGINS_DIR
