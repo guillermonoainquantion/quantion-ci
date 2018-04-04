@@ -16,10 +16,11 @@ RUN apt-get update && \
     apt-get update && \
     apt-get -y install docker-ce
 
-# Install Node for SonarQube
+# Install Node and TypeScript for SonarQube
 RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get update && \
-    apt-get install -y nodejs build-essential
+    apt-get install -y nodejs build-essential && \
+    npm install typescript
 
 ENV JENKINS_OPTS --prefix=/jenkins
 
