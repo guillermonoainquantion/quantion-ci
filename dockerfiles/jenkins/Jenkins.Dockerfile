@@ -16,6 +16,11 @@ RUN apt-get update && \
     apt-get update && \
     apt-get -y install docker-ce
 
+# Install Node for SonarQube
+RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
+    apt-get update && \
+    apt-get install -y nodejs build-essential
+
 ENV JENKINS_OPTS --prefix=/jenkins
 
 COPY ./dockerfiles/jenkins/entrypoint.sh .
