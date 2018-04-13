@@ -24,6 +24,9 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
 
 ENV JENKINS_OPTS --prefix=/jenkins
 
+COPY ./dockerfiles/jenkins/plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+
 COPY ./dockerfiles/jenkins/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
