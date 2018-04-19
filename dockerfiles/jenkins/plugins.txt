@@ -108,4 +108,5 @@ maven-plugin
 pam-auth 
 ldap 
 pipeline-stage-step
+lockable-resources
 
